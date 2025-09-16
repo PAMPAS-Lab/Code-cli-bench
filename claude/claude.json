@@ -1,0 +1,61 @@
+{
+  "numStartups": 1,
+  "installMethod": "unknown",
+  "autoUpdates": true,
+  "firstStartTime": "2025-09-09T08:32:17.151Z",
+  "userID": "e8169ed703f9ba92af341922479627e6f2c357bf1128169a394a5cc8f25cc0ee",
+  "projects": {
+    "/workspace/agent-bench": {
+      "allowedTools": [],
+      "history": [],
+      "mcpContextUris": [],
+      "mcpServers": {},
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": false,
+      "projectOnboardingSeenCount": 0,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "exampleFiles": [
+        "run_interactive_tmux.sh",
+        "cc_user_prompt_submit.py",
+        "cc_stop_notify.py",
+        "cli.js",
+        "README.md"
+      ],
+      "exampleFilesGeneratedAt": 1757406739619
+    },
+    "/home/appuser": {
+      "allowedTools": [],
+      "history": [
+        {
+          "display": "/exit ",
+          "pastedContents": {}
+        }
+      ],
+      "mcpContextUris": [],
+      "mcpServers": {},
+      "enabledMcpjsonServers": [],
+      "disabledMcpjsonServers": [],
+      "hasTrustDialogAccepted": false,
+      "projectOnboardingSeenCount": 1,
+      "hasClaudeMdExternalIncludesApproved": false,
+      "hasClaudeMdExternalIncludesWarningShown": false,
+      "lastCost": 0,
+      "lastAPIDuration": 0,
+      "lastDuration": 7783,
+      "lastLinesAdded": 0,
+      "lastLinesRemoved": 0,
+      "lastTotalInputTokens": 0,
+      "lastTotalOutputTokens": 0,
+      "lastTotalCacheCreationInputTokens": 0,
+      "lastTotalCacheReadInputTokens": 0,
+      "lastTotalWebSearchRequests": 0,
+      "lastSessionId": "6cf43f71-45c0-4263-b5f6-bc8745618091"
+    }
+  },
+  "hasCompletedOnboarding": true,
+  "lastOnboardingVersion": "1.0.81",
+  "subscriptionNoticeCount": 0,
+  "hasAvailableSubscription": false
+}
