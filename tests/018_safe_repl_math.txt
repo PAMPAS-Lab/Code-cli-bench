@@ -1,0 +1,14 @@
+目标：
+- 在 018/ 内实现 scripts/repl.py：安全 REPL，仅支持 +-*/ // % ** () 和数字
+- 输入 'exit' 退出；非法输入提示并继续
+
+要求：
+- 使用 ast.parse + 自定义安全求值（NodeVisitor）
+
+产物（放在 018/）：
+- scripts/repl.py
+
+验收：
+- 运行：python 018/scripts/repl.py
+- 测试：2+3*4 回车得到 14
+

@@ -1,0 +1,13 @@
+目标：
+- 在 017/ 内实现 scripts/search_todo.py：扫描仓库所有 .py，统计 TODO 注释数量并输出表格（file, count）
+- 支持 --min N：仅输出 >=N 的文件
+
+要求：
+- 忽略 venv/.git/.pytest_cache 等目录
+
+产物（放在 017/）：
+- scripts/search_todo.py
+
+验收：
+- python 017/scripts/search_todo.py --min 1
+

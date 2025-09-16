@@ -1,0 +1,15 @@
+目标：
+- 在 012/ 内实现 pkg/config.py：load_config(path|None)->dict
+- 内置默认：012/config/default.toml；支持环境变量 APP_ 覆盖
+
+要求：
+- Python3.11+ 使用 tomllib
+
+产物（放在 012/）：
+- pkg/config.py
+- config/default.toml
+
+验收：
+- APP_KEY=OVERRIDE python -c "from output._012.pkg.config import load_config; print(load_config(None))"
+- 输出 dict 中 KEY 被覆盖（命名按你的 toml）
+

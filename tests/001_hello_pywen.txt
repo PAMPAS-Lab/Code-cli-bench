@@ -1,0 +1,14 @@
+目标：
+- 在 001/ 内新建 scripts/hello.py，运行后打印：Hello, Pywen!
+
+要求：
+- 仅用标准库
+- 提供 __main__ 入口
+
+产物（全部放在 001/）：
+- scripts/hello.py
+
+验收：
+- 运行：python 001/scripts/hello.py
+- 期望输出：Hello, Pywen!
+

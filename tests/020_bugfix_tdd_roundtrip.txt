@@ -1,0 +1,16 @@
+目标：
+- 在 020/ 内采用 TDD：
+  - tests/test_roundtrip.py 先写失败用例
+  - 实现 pkg/roundtrip.py：roundtrip(obj)->obj，保持类型与深拷贝：
+    * str/int/float：原样
+    * list/tuple：同类型，元素递归处理
+    * dict：同类型（保持 dict），key/val 递归处理，返回新对象（深拷贝）
+  - 禁止修改原对象
+
+产物（放在 020/）：
+- tests/test_roundtrip.py
+- pkg/roundtrip.py
+
+验收：
+- pytest -q 020/tests/test_roundtrip.py 通过
+

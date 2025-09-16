@@ -1,0 +1,11 @@
+目标：
+- 在 010/ 内实现 pkg/models.py：@dataclass Person(name:str, age:int)
+- __post_init__ 校验：name 非空，0<=age<=150，否则 ValueError
+
+产物（放在 010/）：
+- pkg/models.py
+- tests/test_models.py（3 个非法案例）
+
+验收：
+- pytest -q 010/tests/test_models.py
+

@@ -1,0 +1,16 @@
+目标：
+- 在 006/ 内实现 pkg/md_toc.py：generate_toc(markdown_text)->list[str]
+- 解析 #/##/### 标题，生成形如：
+  - [H1](#h1)
+    - [H2](#h2)
+
+要求：
+- 仅用 re/字符串处理
+
+产物（放在 006/）：
+- pkg/md_toc.py
+- tests/test_md_toc.py（自拟用例，含中文与空行）
+
+验收：
+- pytest -q 006/tests/test_md_toc.py
+

@@ -1,0 +1,15 @@
+目标：
+- 在 011/ 内实现 pkg/logging_setup.py：init_logger(name, level="INFO")->logger
+- 改造 003/scripts/fizzbuzz.py 的一份副本到 011/scripts/fizzbuzz.py，使用 logger 打印启动信息
+
+要求：
+- 格式：'%(asctime)s %(levelname)s %(name)s: %(message)s'
+
+产物（放在 011/）：
+- pkg/logging_setup.py
+- scripts/fizzbuzz.py
+
+验收：
+- python 011/scripts/fizzbuzz.py -n 5
+- 第一行包含 INFO 和模块名
+

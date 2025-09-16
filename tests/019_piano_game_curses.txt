@@ -1,0 +1,13 @@
+目标：
+- 在 019/ 内实现基于 curses 的终端小游戏 scripts/piano.py
+- 按键映射：ASDFGHJKL -> CDEFGABCD；底部显示最近 10 次的音符序列；30 秒倒计时
+
+要求：
+- 仅用标准库 curses
+
+产物（放在 019/）：
+- scripts/piano.py
+
+验收：
+- 运行脚本；UI 正常更新，倒计时结束后退出并打印总按键次数
+

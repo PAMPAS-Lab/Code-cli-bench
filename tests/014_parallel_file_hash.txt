@@ -1,0 +1,14 @@
+目标：
+- 在 014/ 内实现 scripts/hash_dir.py：并行计算目录内文件 SHA256，输出 CSV：<sha256>,<relpath>
+- 忽略 >10MB 的文件并计数
+
+要求：
+- 使用 concurrent.futures.ThreadPoolExecutor
+
+产物（放在 014/）：
+- scripts/hash_dir.py
+
+验收：
+- python 014/scripts/hash_dir.py --dir 014/samples | tail
+- 末尾打印 ignored_large=<数字>
+

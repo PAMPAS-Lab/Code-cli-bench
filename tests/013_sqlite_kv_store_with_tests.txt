@@ -1,0 +1,14 @@
+目标：
+- 在 013/ 内实现 pkg/kv.py：类 KV(path)-> set/get/delete/keys
+- 使用 sqlite3；表 kv(key TEXT PRIMARY KEY, val TEXT)
+
+要求：
+- set 支持覆盖
+
+产物（放在 013/）：
+- pkg/kv.py
+- tests/test_kv.py
+
+验收：
+- pytest -q 013/tests/test_kv.py
+

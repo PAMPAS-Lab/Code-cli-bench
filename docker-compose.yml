@@ -1,0 +1,54 @@
+# 共享配置模板
+x-agent-bench-common: &agent-bench-common
+  build: .
+  user: "${HOST_UID}:${HOST_GID}"
+  environment:
+    - TZ=Asia/Shanghai
+    - PYTHONPATH=/workspace/Pywen
+    - ANTHROPIC_BASE_URL=${ANTHROPIC_BASE_URL:-}
+    - ANTHROPIC_AUTH_TOKEN=${ANTHROPIC_AUTH_TOKEN:-}
+    - QWEN_API_KEY=${QWEN_API_KEY:-}
+    - QWEN_BASE_URL=${QWEN_BASE_URL:-}
+    - QWEN_MODEL=${QWEN_MODEL:-}
+    - QWEN_SERPER_API_KEY=${QWEN_SERPER_API_KEY:-}
+    - PYWEN_TRAJECTORY_DIR=${PYWEN_TRAJECTORY_DIR:-}
+    - CLAUDE_CODE_THEME=dark
+  volumes:
+    - ./tests:/workspace/agent-bench/tests
+    - ./output:/workspace/agent-bench/output
+    - agent-bench-data:/workspace/data
+  working_dir: /workspace/agent-bench
+
+services:
+  # 非交互模式服务
+  agent-bench:
+    <<: *agent-bench-common
+    container_name: agent-bench-container
+    ports:
+      - "${HOST_PORT:-8000}:8000"
+    command: bash -c "./run_headless.sh"
+    tty: true
+    stdin_open: true
+    restart: unless-stopped
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # 交互模式服务
+  agent-bench-interactive:
+    <<: *agent-bench-common
+    container_name: agent-bench-interactive-container
+    command: bash -c "./run_interactive_tmux.sh"
+    tty: true
+    stdin_open: true
+    profiles:
+      - interactive
+
+volumes:
+  agent-bench-data:
+    driver: local

@@ -1,0 +1,15 @@
+目标：
+- 在 003/ 内实现 scripts/fizzbuzz.py：python scripts/fizzbuzz.py -n 16
+- 支持 --fizz 与 --buzz 自定义词（默认 Fizz/Buzz）
+
+要求：
+- 使用 argparse
+- 有 __main__ 入口
+
+产物（放在 003/）：
+- scripts/fizzbuzz.py
+
+验收：
+- python 003/scripts/fizzbuzz.py -n 16 | tail -3
+- 末三行应包含：14, FizzBuzz, 16
+

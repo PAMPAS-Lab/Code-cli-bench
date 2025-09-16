@@ -1,0 +1,17 @@
+目标：
+- 在 015/ 内实现最小插件系统：
+  - pkg/plugins.py：load_plugins(dir)->list[module]
+  - 约定每个插件实现 run()->str
+  - scripts/run_plugins.py：加载 015/plugins/ 下的 *.py 并依次打印 run() 结果
+
+要求：
+- 插件异常要捕获并继续
+
+产物（放在 015/）：
+- pkg/plugins.py
+- scripts/run_plugins.py
+- plugins/echo.py（示例，返回 "OK"）
+
+验收：
+- python 015/scripts/run_plugins.py  # 应包含 OK
+

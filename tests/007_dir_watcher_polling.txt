@@ -1,0 +1,14 @@
+目标：
+- 在 007/ 内实现 scripts/watch_dir.py：每 1s 轮询目录，打印 [ADD]/[DEL] 文件名
+- Ctrl-C 退出
+
+要求：
+- 仅用 os、time、signal
+
+产物（放在 007/）：
+- scripts/watch_dir.py
+
+验收：
+- 启动：python 007/scripts/watch_dir.py --dir 007/tmp
+- 另开终端 touch/rm 文件，应看到 [ADD]/[DEL]
+

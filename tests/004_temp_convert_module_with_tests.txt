@@ -1,0 +1,14 @@
+目标：
+- 在 004/ 内实现 pkg/temperature.py：c2f(c)->f，f2c(f)->c，保留两位小数
+- 在 004/ 内实现 tests/test_temperature.py
+
+要求：
+- 使用 round(x,2)
+
+产物（放在 004/）：
+- pkg/temperature.py
+- tests/test_temperature.py
+
+验收：
+- pytest -q 004/tests/test_temperature.py
+

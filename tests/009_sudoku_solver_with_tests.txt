@@ -1,0 +1,14 @@
+目标：
+- 在 009/ 内实现 pkg/sudoku.py：solve(board)->solved_board（9x9，0 表空）
+- 在 009/ 内实现 tests/test_sudoku.py（提供一组可解样例）
+
+要求：
+- 回溯法；无解返回 None；样例 2 秒内求解
+
+产物（放在 009/）：
+- pkg/sudoku.py
+- tests/test_sudoku.py
+
+验收：
+- pytest -q 009/tests/test_sudoku.py
+

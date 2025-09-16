@@ -1,0 +1,17 @@
+目标：
+- 在 005/ 内实现 pkg/jsonl.py：iter_jsonl(path) 逐行 yield 解析后的 dict
+- 新建 sample/data.jsonl（3 行示例）
+- 实现 scripts/print_jsonl.py：打印每条的键数量，最后打印 invalid_lines=<数字>
+
+要求：
+- 对无效 JSON 行要 try/except 跳过并计数
+
+产物（放在 005/）：
+- pkg/jsonl.py
+- sample/data.jsonl
+- scripts/print_jsonl.py
+
+验收：
+- python 005/scripts/print_jsonl.py 005/sample/data.jsonl
+- 末行打印：invalid_lines=<数字>
+

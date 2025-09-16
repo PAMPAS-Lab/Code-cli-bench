@@ -1,0 +1,14 @@
+目标：
+- 在 008/ 内实现 scripts/serve_static.py：用 http.server 提供目录
+- 参数：--dir <path> --port <int>（默认 8000）
+
+要求：
+- 目录不存在时报错退出码非零，记录访问日志
+
+产物（放在 008/）：
+- scripts/serve_static.py
+
+验收：
+- 启动：python 008/scripts/serve_static.py --dir 008/www --port 8000
+- curl http://127.0.0.1:8000/
+

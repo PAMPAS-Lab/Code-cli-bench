@@ -1,0 +1,17 @@
+目标：
+- 在 016/ 内实现 pkg/taskq.py：类 TaskQueue(workers:int)
+  - submit(fn,*a,**kw)
+  - start()/stop()（优雅停止，等待队列清空）
+- 在 scripts/demo_taskq.py 提交 10 个任务（sleep+打印）
+
+要求：
+- 使用 queue.Queue + threading
+- stop() 后不再接受新任务
+
+产物（放在 016/）：
+- pkg/taskq.py
+- scripts/demo_taskq.py
+
+验收：
+- python 016/scripts/demo_taskq.py 可见多线程并行处理
+
