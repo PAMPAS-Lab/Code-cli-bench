@@ -1,13 +1,12 @@
-# agent-bench
+# Code-cli-bench
 
 ## 概览
 
 本仓库用于对比 **Pywen** 与 **Claude Code** 两个 Agent 在 **交互模式** 与 **非交互模式** 下的表现。
-主要目标：
+目标是让 Pywen 与 Claude Code 在相同输入条件下执行相同任务，通过记录双方的执行轨迹来对比，分析两个Agent处理问题的方式。
 
-* **公平对比**：Prompt 组装、请求时机、响应内容；
-* **自动化测试**：批量投喂测试用例；
-* **精准控制**：通过 Hooks 与 FIFO 通知机制，可靠判断一轮测试是否完成。
+其中非交互模式运行简单，适合批量测试。交互模式更接近真实用户使用流程，适合研究对话流程，上下文管理与拼接,
+可作为非交互模式的补充。
 
 ---
 
@@ -31,7 +30,7 @@
 
 ### 1) Docker 运行（推荐）
 
-#### 1. 准备 `.env`
+#### 准备环境变量 `.env`
 
 仓库默认只提供 `.env.example`，请**手动复制**并填写：
 
@@ -39,7 +38,7 @@
 cp .env.example .env
 ```
 
-`.env` 中常用变量（与 compose 对齐）：
+`.env` 中必须要填写的项(如果环境变量中已包含，则可忽略)：
 
 ```
 ANTHROPIC_BASE_URL=
@@ -47,15 +46,13 @@ ANTHROPIC_AUTH_TOKEN=
 QWEN_API_KEY=
 QWEN_BASE_URL=
 QWEN_MODEL=
-QWEN_SERPER_API_KEY=
-PYWEN_TRAJECTORY_DIR=
 
-# ↓↓↓ 为避免 output 目录写入 root 所有，请务必设置 ↓↓↓
+# ↓↓↓ 为避免输出目录的权限问题，请务必设置 ↓↓↓
 HOST_UID=
 HOST_GID=
 ```
 
-#### 2. 正确获取并写入 UID / GID（避免 root 占有 output）
+以下介绍设置这两个环境变量的方法:
 
 * **Linux / macOS (Bash/Zsh)：**
 
@@ -74,107 +71,54 @@ HOST_GID=
   * 如果在 **WSL** 里运行 Docker/Compose，请在 **WSL Shell** 中执行上面同样的命令获取并写入。
   * 如果直接使用 **Docker Desktop（Windows 本机路径挂载）**，文件权限由 Docker Desktop 翻译，通常**可以留空** `HOST_UID/HOST_GID`（或按需设置成 `1000:1000`）。如遇权限问题，建议改为在 WSL 中运行。
 
-> compose 已在公共模板里设置：
->
-> ```yaml
-> user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
-> ```
->
-> 若 `.env` 未生效，会兜底使用 `1000:1000`。
+> 如果 .env 未设置，则默认使用 1000:1000 构建镜像，可能导致宿主机无法直接修改 output 文件。
 
-#### 3. 启动
+#### 构建及运行
 
-* **非交互模式（后台运行）**
-
-  ```bash
-  docker compose up -d agent-bench
-  ```
-
-* **交互模式（需要用户交互）**
-
-  ```bash
-  docker compose --profile interactive up agent-bench-interactive
-  ```
-
-  > `agent-bench-interactive` 使用 `profiles: [interactive]`，默认 `up` 不会启动，需显式加 `--profile interactive`。
-
-#### 4. 卷挂载与路径说明
-
-compose 已通过锚点 `x-agent-bench-common` 配置了 `volumes`（相对路径以 **compose 文件所在目录** 为基准）：
-
-* `./tests:/workspace/agent-bench/tests`（bind mount）
-* `./output:/workspace/agent-bench/output`（bind mount）
-* `agent-bench-data:/workspace/data`（named volume）
-
-若你用 `-f some/dir/docker-compose.yml` 从别处运行，建议把宿主机侧路径改为**绝对路径**，或在 `.env` 中提供：
-
-```
-PROJECT_ROOT=/abs/path/to/your/repo
-```
-
-并在 compose 中写：
-
-```yaml
-- ${PROJECT_ROOT}/tests:/workspace/agent-bench/tests
-- ${PROJECT_ROOT}/output:/workspace/agent-bench/output
-```
-
-#### 5. 避免 / 修复 `output` 目录 root 占有
-
-* **原则**：容器以你的 UID\:GID 运行 → 写出的文件在宿主机归你所有。
-* **历史产物修复（只需一次）**：
-
-  ```bash
-  sudo chown -R "$(id -u)":"$(id -g)" ./output
-  ```
-* **必须 root 执行的任务**（不推荐，全局 root）：可在宿主机将 `output` 设为“组可写并继承”，并在容器启动命令前加 `umask 0002`：
-
-  ```bash
-  # 宿主机
-  sudo chgrp -R "$(id -g)" ./output
-  sudo chmod -R g+rwX ./output
-  sudo find ./output -type d -exec chmod g+s {} \;
-
-  # docker-compose.yml 中（示例）
-  command: bash -lc 'umask 0002; ./run_headless.sh'
-  ```
-* **SELinux 系统**（Fedora/CentOS/RHEL）若遇到 `permission denied`：在挂载后加 `:z` 或 `:Z`：
-
-  ```yaml
-  - ./output:/workspace/agent-bench/output:z
-  ```
-
-#### 6. 重建与自检
+* **构建镜像**
 
 ```bash
-# 强制重建，确保 user/volume 生效
-docker compose down
-docker compose up -d --build --force-recreate
-
-# 验证容器实际运行身份
-CID=$(docker compose ps -q agent-bench)
-docker inspect "$CID" --format '{{.Config.User}}'   # 期望输出：<你的UID>:<你的GID>
-docker compose exec agent-bench sh -lc 'id -u; id -g'
-
-# 检查挂载
-docker inspect "$CID" | jq '.[0].Mounts'
+docker compose build 
 ```
 
+* 运行**非交互模式**
+
+```bash
+docker compose up bench-headless
+```
+
+* 运行**交互模式**
+
+```bash
+docker compose up bench-interactive
+```
 ---
 
-### 2) 本地运行
+### 2) 本地交互模式运行
 
-#### 安装依赖
+#### 准备工作
 
-* Python ≥ 3.10
-* tmux
-* 可选：pytest、jq
+##### A. 准备 claude code
 
----
+- 设置环境变量，禁止claude code 自动升级
 
-## 本地交互模式使用
+```bash
+export DISABLE_AUTOUPDATER=1
+```
+- 安装`claude code`, 版本使用`v1.0.81`
 
-### 1) 配置 Claude Code Hooks
+```bash 
+npm install -g @anthropic-ai/claude-code@1.0.81
+```
+- 使用`claude/cli.js` 替换`claude code`的真实执行文件
+使用`which claude`查看claude真实路径，并使用`claude/cli.js`替换
+```bash
+which claude
+# 假设结果是 /usr/local/bin/claude
+cp claude/cli.js /usr/local/lib/node_modules/@anthropic-ai/claude-code/cli.js
+```
+
+- 配置 Claude Code Hooks
 
 `~/.claude/settings.json`：
 
@@ -205,19 +149,46 @@ docker inspect "$CID" | jq '.[0].Mounts'
 }
 ```
 
-### 2) 配置 Pywen 回调
+- 运行claude 
 
-在 Pywen 的“本轮完成”回调中调用：
+运行claude，确保能正常使用claude code
 
+##### B. 准备 Pywen
+
+使用特殊版本的pywen
 ```python
-from scripts.pywen_done_notify import notify_pywen_done
-notify_pywen_done(case_id)
+git clone https://github.com/leeyeel/Pywen.git 
+cd Pywen && git checkout multi-agent
+```
+按照[README](https://github.com/PAMPAS-Lab/Pywen) 安装pywen,确认可以正常使用。
+
+```bash
+# 克隆并切换分支
+git clone https://github.com/leeyeel/Pywen.git
+cd Pywen && git checkout multi-agent
+
+# 创建虚拟环境并安装依赖
+uv venv
+uv sync --all-extras
+uv pip install -e .
 ```
 
-### 3) 启动自动投喂脚本
+#### 脚本运行
 
 ```bash
 ./run_interactive_tmux.sh
+```
+
+也可以通过`-h`参数查看帮助信息:
+```bash
+Usage: ./run_interactive_tmux.sh [-t TEST_DIR] [-d SECONDS] [-s] [-v]
+  -t TEST_DIR   测试用例目录（默认：tests）
+  -d SECONDS    自动模式下每条用例提交后等待秒数（默认：5）
+  -s            step 模式：每条用例提交前等待你按 Enter
+  -v            详细模式：显示调试信息
+环境变量可覆盖：
+  SESSION, CLAUDE_CMD, PYWEN_CMD, DEBUG
+
 ```
 
 脚本行为：
@@ -236,9 +207,16 @@ tmux 热键：
 
 ---
 
-## 本地非交互模式使用
+### 3) 本地非交互模式运行
 
-`./run_headless.sh` 行为：
+```bash
+./run_headless.sh 
+```
+也可通过`-h`命令查看帮助信息:
+```bash
+Usage: ./run_headless.sh [-t TEST_DIR] [-s SHOW]
+  SHOW: claude | pywen | both | none
+```
 
 * 遍历 `tests/*.txt`；
 * 分别调用 Claude 与 Pywen 的命令行批处理接口（非交互模式）；
@@ -250,45 +228,8 @@ tmux 热键：
 
 `tests/` 目录中提供若干循序渐进的示例用例，可自行添加、逐步加深复杂度。
 
----
+运行时可通过`-t`来指定测试用例文件夹，默认使用当前目录的`tests`目录作为测试用例目录。
 
-## 对比总结
-
-* **交互模式**
-
-  * 更贴近真实使用体验；
-  * Hooks + FIFO 精准判定一轮结束；
-  * 适合研究 **对话流程/上下文拼接**。
-
-* **非交互模式**
-
-  * 更简洁，直接跑批；
-  * 进程退出即 DONE；
-  * 适合快速 benchmark。
+生成的输出文件位于`output`目录，`output`目录会根据类别，测试用例序号分别存储输出内容，记录执行轨迹（trajectory）文件。
 
 ---
-
-### 附：排错速查（卷未生效/权限异常）
-
-* 展开 compose 检查是否包含你的 `user` 与挂载：
-
-  ```bash
-  docker compose config | sed -n '/agent-bench:$/,/^[^ ]/p'
-  docker compose config | sed -n '/agent-bench-interactive:$/,/^[^ ]/p'
-  ```
-* 运行中验证实际身份与挂载：
-
-  ```bash
-  CID=$(docker compose ps -q agent-bench)
-  docker inspect "$CID" --format '{{.Config.User}}'
-  docker compose exec agent-bench sh -lc 'id -u; id -g'
-  docker inspect "$CID" | jq '.[0].Mounts'
-  ```
-* 历史 root 产物修复：
-
-  ```bash
-  sudo chown -R "$(id -u)":"$(id -g)" ./output
-  ```
-
----
-
