@@ -31,7 +31,7 @@ services:
     container_name: bench-headless
     ports:
       - "${HOST_PORT:-8000}:8000"
-        #command: bash -lc "./run_headless.sh"
+    command: bash -lc "./run_headless.sh"
     restart: unless-stopped
 
     healthcheck:

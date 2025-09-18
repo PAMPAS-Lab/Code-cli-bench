@@ -10,6 +10,8 @@ TEST_DIR="tests"
 ROOT_DIR="$(pwd)"
 CLAUDE_OUT_DIR="$ROOT_DIR/output/interactive/claude"
 PYWEN_OUT_DIR="$ROOT_DIR/output/interactive/pywen"
+export PYWEN_TRAJECTORY_DIR="$PYWEN_OUT_DIR"
+export CLAUDE_TRAJECTORY_DIR="$CLAUDE_OUT_DIR"
 DELAY=5
 CLAUDE_CMD="${CLAUDE_CMD:-claude}"
 PYWEN_CMD="${PYWEN_CMD:-pywen}"
@@ -63,7 +65,7 @@ while getopts ":t:d:svh" opt; do
   esac
 done
 
-pywen --create-config
+"$PYWEN_CMD" --create-config
 
 if ! tmux has-session -t "$SESSION" 2>/dev/null; then
   tmux new-session -d -s "$SESSION" \

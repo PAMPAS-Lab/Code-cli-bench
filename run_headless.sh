@@ -50,8 +50,10 @@ fi
 CLAUDE_ROOT="$ROOT_DIR/output/headless/claude"
 PYWEN_ROOT="$ROOT_DIR/output/headless/pywen"
 mkdir -p "$CLAUDE_ROOT" "$PYWEN_ROOT"
+export PYWEN_TRAJECTORY_DIR="$PYWEN_ROOT"
+export CLAUDE_TRAJECTORY_DIR="$CLAUDE_ROOT"
 
-exec "$PYWEN_CMD" --create-config
+"$PYWEN_CMD" --create-config
 
 for f in "${tests[@]}"; do
   case_id="$(basename "$f" .txt)"
