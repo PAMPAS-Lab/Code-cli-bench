@@ -1,31 +1,10 @@
 {
-  "numStartups": 1,
+  "numStartups": 2,
   "installMethod": "unknown",
   "autoUpdates": true,
-  "firstStartTime": "2025-09-09T08:32:17.151Z",
-  "userID": "e8169ed703f9ba92af341922479627e6f2c357bf1128169a394a5cc8f25cc0ee",
+  "firstStartTime": "2025-09-17T03:15:58.765Z",
   "projects": {
     "/workspace/agent-bench": {
-      "allowedTools": [],
-      "history": [],
-      "mcpContextUris": [],
-      "mcpServers": {},
-      "enabledMcpjsonServers": [],
-      "disabledMcpjsonServers": [],
-      "hasTrustDialogAccepted": false,
-      "projectOnboardingSeenCount": 0,
-      "hasClaudeMdExternalIncludesApproved": false,
-      "hasClaudeMdExternalIncludesWarningShown": false,
-      "exampleFiles": [
-        "run_interactive_tmux.sh",
-        "cc_user_prompt_submit.py",
-        "cc_stop_notify.py",
-        "cli.js",
-        "README.md"
-      ],
-      "exampleFilesGeneratedAt": 1757406739619
-    },
-    "/home/appuser": {
       "allowedTools": [],
       "history": [
         {
@@ -37,25 +16,28 @@
       "mcpServers": {},
       "enabledMcpjsonServers": [],
       "disabledMcpjsonServers": [],
-      "hasTrustDialogAccepted": false,
-      "projectOnboardingSeenCount": 1,
+      "hasTrustDialogAccepted": true,
+      "projectOnboardingSeenCount": 2,
       "hasClaudeMdExternalIncludesApproved": false,
       "hasClaudeMdExternalIncludesWarningShown": false,
-      "lastCost": 0,
-      "lastAPIDuration": 0,
-      "lastDuration": 7783,
+      "lastTotalWebSearchRequests": 0,
+      "lastCost": 0.0004064,
+      "lastAPIDuration": 2484,
+      "lastDuration": 6000,
       "lastLinesAdded": 0,
       "lastLinesRemoved": 0,
-      "lastTotalInputTokens": 0,
-      "lastTotalOutputTokens": 0,
+      "lastTotalInputTokens": 248,
+      "lastTotalOutputTokens": 52,
       "lastTotalCacheCreationInputTokens": 0,
       "lastTotalCacheReadInputTokens": 0,
-      "lastTotalWebSearchRequests": 0,
-      "lastSessionId": "6cf43f71-45c0-4263-b5f6-bc8745618091"
+      "lastSessionId": "31e9ea12-c08b-45f9-831d-0335f207f78c"
     }
   },
+  "userID": "9d4bb646113735539715eb177edd274fd01669bfc6527cf68f2447ab5c53a9a8",
   "hasCompletedOnboarding": true,
   "lastOnboardingVersion": "1.0.81",
+  "bypassPermissionsModeAccepted": true,
   "subscriptionNoticeCount": 0,
-  "hasAvailableSubscription": false
+  "hasAvailableSubscription": false,
+  "isQualifiedForDataSharing": false
 }

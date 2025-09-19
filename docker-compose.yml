@@ -1,7 +1,6 @@
 # 共享配置模板
 x-agent-bench-common: &agent-bench-common
-  build: .
-  user: "${HOST_UID}:${HOST_GID}"
+  image: ${IMAGE_NAME:-agent-bench:local}
   environment:
     - TZ=Asia/Shanghai
     - PYTHONPATH=/workspace/Pywen
@@ -18,20 +17,23 @@ x-agent-bench-common: &agent-bench-common
     - ./output:/workspace/agent-bench/output
     - agent-bench-data:/workspace/data
   working_dir: /workspace/agent-bench
+  tty: true
+  stdin_open: true
 
 services:
-  # 非交互模式服务
-  agent-bench:
+  bench-image:
+    build: .
+    image: ${IMAGE_NAME:-agent-bench:local}
+    command: ["bash", "-lc", "echo Built ${IMAGE_NAME:-agent-bench:local}"]
+
+  bench-headless:
     <<: *agent-bench-common
-    container_name: agent-bench-container
+    container_name: bench-headless
     ports:
       - "${HOST_PORT:-8000}:8000"
-    command: bash -c "./run_headless.sh"
-    tty: true
-    stdin_open: true
+    command: bash -lc "./run_headless.sh"
     restart: unless-stopped
-    
-    # Health check
+
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -39,16 +41,13 @@ services:
       retries: 3
       start_period: 40s
 
-  # 交互模式服务
-  agent-bench-interactive:
+  bench-interactive:
     <<: *agent-bench-common
-    container_name: agent-bench-interactive-container
-    command: bash -c "./run_interactive_tmux.sh"
-    tty: true
-    stdin_open: true
-    profiles:
-      - interactive
+    container_name: bench-interactive
+    command: bash -lc "./run_interactive_tmux.sh"
+    restart: unless-stopped
 
 volumes:
   agent-bench-data:
     driver: local
+

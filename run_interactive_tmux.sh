@@ -10,6 +10,8 @@ TEST_DIR="tests"
 ROOT_DIR="$(pwd)"
 CLAUDE_OUT_DIR="$ROOT_DIR/output/interactive/claude"
 PYWEN_OUT_DIR="$ROOT_DIR/output/interactive/pywen"
+export PYWEN_TRAJECTORY_DIR="$PYWEN_OUT_DIR"
+export CLAUDE_TRAJECTORY_DIR="$CLAUDE_OUT_DIR"
 DELAY=5
 CLAUDE_CMD="${CLAUDE_CMD:-claude}"
 PYWEN_CMD="${PYWEN_CMD:-pywen}"
@@ -63,12 +65,14 @@ while getopts ":t:d:svh" opt; do
   esac
 done
 
+"$PYWEN_CMD" --create-config
+
 if ! tmux has-session -t "$SESSION" 2>/dev/null; then
   tmux new-session -d -s "$SESSION" \
-    "bash -lc 'mkdir -p \"$CLAUDE_OUT_DIR\" && cd \"$CLAUDE_OUT_DIR\" && \"$CLAUDE_CMD\" --dangerously-skip-permissions'"
+    "bash -lc 'mkdir -p \"$CLAUDE_OUT_DIR\" && cd \"$CLAUDE_OUT_DIR\" && \"$CLAUDE_CMD\" --dangerously-skip-permissions || true; exec bash -li'"
 
   tmux split-window -h -t "$SESSION" \
-    "bash -lc 'mkdir -p \"$PYWEN_OUT_DIR\" && cd \"$PYWEN_OUT_DIR\" && \"$PYWEN_CMD\"'"
+    "bash -lc 'mkdir -p \"$PYWEN_OUT_DIR\" && cd \"$PYWEN_OUT_DIR\" && \"$PYWEN_CMD\" || true; exec bash -li'"
 
   tmux select-layout -t "$SESSION" even-horizontal
   tmux set-option -t "$SESSION" mouse on
