@@ -197,8 +197,8 @@ wait_both_done() {
 }
 
 shopt -s nullglob
-tests=( "$TEST_DIR"/*.txt )
-(( ${#tests[@]} > 0 )) || { echo "No *.txt in $TEST_DIR"; exec tmux attach -t "$SESSION"; }
+tests=("$TEST_DIR"/*.txt "$TEST_DIR"/*.md)
+(( ${#tests[@]} > 0 )) || { echo "No *.txt or *.md in $TEST_DIR"; exec tmux attach -t "$SESSION"; }
 
 echo "会话：$SESSION"
 echo "Claude pane: $CLAUDE_PANE"

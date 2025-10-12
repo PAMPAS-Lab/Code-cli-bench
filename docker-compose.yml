@@ -1,6 +1,6 @@
 # 共享配置模板
 x-agent-bench-common: &agent-bench-common
-  image: ${IMAGE_NAME:-code-cli-bench:local}
+  image: ${IMAGE_NAME:-code-cli-bench:v0.1.0}
   environment:
     - TZ=Asia/Shanghai
     - PYTHONPATH=/workspace/Pywen
@@ -23,8 +23,8 @@ x-agent-bench-common: &agent-bench-common
 services:
   bench-image:
     build: .
-    image: ${IMAGE_NAME:-code-cli-bench:local}
-    command: ["bash", "-lc", "echo Built ${IMAGE_NAME:-code-cli-bench:local}"]
+    image: ${IMAGE_NAME:-code-cli-bench:v0.1.0}
+    command: ["bash", "-lc", "echo Built ${IMAGE_NAME:-code-cli-bench:v0.1.0}"]
 
   bench-headless:
     <<: *agent-bench-common

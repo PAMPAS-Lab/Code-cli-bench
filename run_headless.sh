@@ -2,6 +2,7 @@
 # ./run_headless.sh -t tests -s claude
 set -euo pipefail
 
+
 ROOT_DIR="$(pwd)"
 TEST_DIR="tests"
 SHOW="claude"
@@ -41,9 +42,9 @@ prefix_pipe() {
 }
 
 shopt -s nullglob
-tests=("$TEST_DIR"/*.md)
+tests=("$TEST_DIR"/*.txt "$TEST_DIR"/*.md)
 if (( ${#tests[@]} == 0 )); then
-  echo "No *.txt found in $TEST_DIR"
+  echo "No *.txt or *.md found in $TEST_DIR"
   exit 1
 fi
 
