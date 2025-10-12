@@ -4,5 +4,3 @@ output/*
 *.env
 !.gitkeep
 agents.yaml
-!.gitkeep
-agents.yaml
