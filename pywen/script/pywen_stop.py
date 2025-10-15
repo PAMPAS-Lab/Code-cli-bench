@@ -3,7 +3,7 @@
 """
 Pywen Stop/SubagentStop hook:
 - 读取 session_id -> 尝试从 /tmp/agent-done/session_cases/<session_id>.case 取 case_id
-- 将 "<case_id> DONE\n" 写入 FIFO: /tmp/agent-done/pywen.done
+- 将 "<case_id> DONE\n" 写入 FIFO: /tmp/agent-done/pywen.fifo
   * POSIX: 非阻塞写入 FIFO；失败则写入 fallback 日志文件
   * 非 POSIX(Windows): 直接写入 fallback 日志文件
 - 通过 JSON stdout 返回 systemMessage，提示用户该 hook 已执行（不阻断）
@@ -15,8 +15,7 @@ import json
 from pathlib import Path
 
 FIFO_DIR = Path(os.environ.get("FIFO_DIR", "/tmp/agent-done"))
-FIFO_PATH = FIFO_DIR / "pywen.done"
-FALLBACK_LOG = FIFO_DIR / "pywen.done.log"
+FIFO_PATH = FIFO_DIR / "pywen.fifo"
 CASE_DIR = FIFO_DIR / "session_cases"
 CASE_DIR.mkdir(parents=True, exist_ok=True)
 FIFO_DIR.mkdir(parents=True, exist_ok=True)
@@ -65,11 +64,6 @@ def write_done(case_id: str) -> str:
                 FIFO_PATH.unlink(missing_ok=True)
             os.mkfifo(str(FIFO_PATH))
     except Exception:
-        try:
-            with open(FALLBACK_LOG, "a", encoding="utf-8") as w:
-                w.write(f"{case_id} DONE\n")
-            return "file"
-        except Exception:
             return "file"
 
     try:
@@ -79,12 +73,7 @@ def write_done(case_id: str) -> str:
         finally:
             os.close(fd)
         return "fifo"
-    except OSError as e:
-        try:
-            with open(FALLBACK_LOG, "a", encoding="utf-8") as w:
-                w.write(f"{case_id} DONE\n")
-            return "file"
-        except Exception:
+    except OSError:
             return "file"
 
 

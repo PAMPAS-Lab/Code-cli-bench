@@ -241,7 +241,6 @@ fi
 run_headless() {
   local test_file="$1"
   local case_id="$2"
-  local prompt="$3"
   
   log_info "Running test case: $case_id"
   log_debug "Test file: $test_file"
@@ -255,6 +254,8 @@ run_headless() {
       log_debug "Detected codex headless mode, using: $COMMAND $effective_args"
     fi
   fi
+
+  prompt="$(cat "$test_file")"
  
   $COMMAND $effective_args "$prompt" 
 
@@ -268,63 +269,81 @@ run_headless() {
   return $exit_code
 }
 
+wait_for_fifo_content() {
+  local fifo_path="/tmp/agent-done/${AGENT_NAME}.fifo"
+
+  if [[ ! -p "$fifo_path" ]]; then
+    mkdir -p "$(dirname "$fifo_path")"
+    rm -f "$fifo_path" 2>/dev/null || true
+    mkfifo "$fifo_path"
+    echo "[INFO] Created fifo: $fifo_path"
+  fi
+
+  echo "[INFO] Waiting for message from FIFO: $fifo_path"
+  exec {fd}<>"$fifo_path"
+
+  local line
+  IFS= read -r line <&"$fd"
+
+  exec {fd}>&-
+
+  echo "[INFO] Received from FIFO: $line"
+  echo "$line"
+}
+
+
 run_interactive() {
   local test_file="$1"
   local case_id="$2"
-  local prompt="$3"
 
-  log_info "Interactive mode: $case_id"
-
-  if [[ "$STEP_MODE" == "1" ]]; then
-    read -rp "Press Enter to start interactive session for $case_id..."
+  if [[ ! -f "$test_file" ]]; then
+    log_warn "Test file not found: $test_file"
+    return 2
   fi
 
-  cd "$AGENT_OUTPUT_DIR" || exit 1
+  log_info  "Running test case (interactive via tmux): $case_id"
+  log_debug "Test file: $test_file"
 
-  printf "\n${CYAN}── Interactive chat started ──${NC}\n"
-  printf "${YELLOW}Agent:${NC} %s\n" "$AGENT_NAME"
-  printf "${YELLOW}Command:${NC} %s %s\n" "$COMMAND" "$ARGS"
-  printf "${YELLOW}Output dir:${NC} %s\n" "$AGENT_OUTPUT_DIR"
-  printf "${YELLOW}Tips:${NC} Type /quit to exit (or press Ctrl-C).\n\n"
-
-  if [[ -n "$INIT_CMD" ]]; then
-    log_debug "Running init: $INIT_CMD"
-    eval "$INIT_CMD" || log_warn "Init command exited non‑zero"
+  local fifo_dir="/tmp/agent-done"
+  local fifo_path="$fifo_dir/${AGENT_NAME}.fifo"
+  mkdir -p "$fifo_dir/session_cases"
+  if [[ ! -p "$fifo_path" ]]; then
+    rm -f "$fifo_path" 2>/dev/null || true
+    mkfifo "$fifo_path" 2>/dev/null || true
   fi
 
-  if [[ -t 0 && -t 1 ]]; then
-    if [[ -n "$prompt" ]]; then
-      printf "${BLUE}[HINT]${NC} First message from test file (%s):\n\n%s\n\n" "$(basename "$test_file")" "$prompt" >&2
-    fi
+  local sess="agent_run"
+  tmux has-session -t "$sess" 2>/dev/null && tmux kill-session -t "$sess" 2>/dev/null || true
+  pane_id="$(tmux new-session -d -s "$sess" -c "$PWD" -P -F '#{pane_id}' "$COMMAND $ARGS")"
+  sleep 1
+  tmux send-keys -t "$pane_id" -l "CASE_ID=${case_id}"
+  tmux send-keys -t "$pane_id" Enter C-m
+  sleep 1
+  { cat "$test_file"; printf '\n'; } | tmux load-buffer -b tmpbuf -
+  tmux paste-buffer -t "$pane_id" -b tmpbuf
+  tmux delete-buffer -b tmpbuf 2>/dev/null || true
+  tmux send-keys -t "$pane_id" C-m
+  local status="$(wait_for_fifo_content)"
+  sleep 0.5
+  tmux send-keys -t "$pane_id" Enter C-m
+  sleep 0.5
+  tmux send-keys -t "$pane_id" -l "/quit"
+  tmux send-keys -t "$pane_id" Enter C-m
 
-    set +e
-    $COMMAND $ARGS
-    local exit_code=$?
-    set -e
-    if [[ $exit_code -ne 0 ]]; then
-      log_warn "Interactive session exited with code $exit_code"
-    else
-      log_success "Interactive session finished"
-    fi
-    return $exit_code
-  else
-    log_warn "No TTY detected; falling back to pseudo‑interactive single‑turn loop."
-    log_info "Enter lines; empty line to end. Each line will be sent as an independent prompt."
-    local line
-    while IFS= read -r line; do
-      [[ -z "$line" ]] && break
-      echo "$line" | $COMMAND $ARGS
-      printf "\n"
-    done
+  if [[ "$status" == "${case_id} DONE" ]]; then
+    log_success "Interactive case $case_id completed successfully (agent=${AGENT_NAME})"
     return 0
+  else
+    log_warn "Interactive case $case_id wait failed: $status (agent=${AGENT_NAME})"
+    return 124
   fi
 }
+
 
 log_info "Starting test execution in $MODE mode"
 
 for test_file in "${tests[@]}"; do
   case_id="$(basename "$test_file" | sed 's/\.[^.]*$//')"
-  prompt="$(cat "$test_file")"
   
   printf "\n${CYAN}────────────────────────────────────────────────────────${NC}\n"
   printf "${YELLOW}[CASE] %s - %s${NC}\n" "$case_id" "$(date -Iseconds)"
@@ -336,10 +355,12 @@ for test_file in "${tests[@]}"; do
   
   case "$MODE" in
     headless)
-      run_headless "$test_file" "$case_id" "$prompt"
+      run_headless "$test_file" "$case_id" 
       ;;
     interactive)
-      run_interactive "$test_file" "$case_id" "$prompt"
+      set +e
+      run_interactive "$test_file" "$case_id"
+      set -e
       ;;
   esac
   

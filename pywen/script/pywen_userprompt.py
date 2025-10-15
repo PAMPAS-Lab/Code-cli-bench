@@ -4,7 +4,7 @@
 Pywen UserPromptSubmit hook:
 - 识别形如 "CASE_ID=xxxx" 的提示词
 - 将 case_id 落盘到 $FIFO_DIR/session_cases/<session_id>.case
-- 以 JSON 协议返回 {"decision":"block","reason": "..."} 来阻断本次 prompt（内容不进入上下文）
+- 以 JSON 协议返回 {"decision":"block","reason": "..."} 来阻断本次 prompt
 """
 
 import os
@@ -20,14 +20,12 @@ CASE_DIR.mkdir(parents=True, exist_ok=True)
 PROMPT_KEYS_IN = ("prompt", "user_prompt", "userPrompt")
 CASE_RE = re.compile(r"^CASE_ID=([^\s\"']+)\s*$", re.IGNORECASE)
 
-
 def parse_stdin_json() -> dict:
     raw = sys.stdin.read()
     try:
         return json.loads(raw)
     except Exception:
         return {}
-
 
 def extract_prompt(data: dict) -> str:
     for k in PROMPT_KEYS_IN:
@@ -59,7 +57,7 @@ def extract_session_id(data: dict) -> str:
 def write_session_case(session_id: str, case_id: str) -> None:
     path = CASE_DIR / f"{session_id}.case"
     try:
-        path.write_text(case_id + "\n", encoding="utf-8")
+        path.write_text(case_id, encoding="utf-8")
     except Exception:
         pass
 
