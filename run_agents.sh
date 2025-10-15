@@ -11,7 +11,6 @@ STEP_MODE=0
 VERBOSE=0
 OUTPUT_DIR=""
 DELAY=""
-SHOW_OUTPUT=""
 LIST_AGENTS=0
 
 RED='\033[0;31m'
@@ -126,29 +125,38 @@ fi
 
 parse_config() {
   local key="$1"
-  local default="$2"
+  local fallback="$2"
   local value
-  
-  value=$(yq eval ".agents.${AGENT_NAME}.${key} // .defaults.${key} // \"${default}\"" "$CONFIG_FILE" 2>/dev/null || echo "$default")
-  
-  [[ "$value" == "null" ]] && value="$default"
-  
-  echo "$value"
+
+  value="$(yq eval -r ".agents[\"${AGENT_NAME}\"].${key} // .defaults.${key}" "$CONFIG_FILE" 2>/dev/null || true)"
+
+  if [[ -z "$value" || "$value" == "null" ]]; then
+    value="$fallback"
+  fi
+
+  case "$value" in
+    true|True)  echo "true" ;;
+    false|False) echo "false" ;;
+    *) echo "$value" ;;
+  esac
 }
 
 parse_env_config() {
   local env_key="$1"
   local value
-  
-  value=$(yq eval ".agents.${AGENT_NAME}.env.${env_key} // .defaults.env.${env_key} // \"\"" "$CONFIG_FILE" 2>/dev/null || echo "")
-  
-  if [[ "$value" =~ ^env: ]]; then
-    local env_var="${value#env:}"
+
+  value="$(yq -r ".agents[\"${AGENT_NAME}\"].env.${env_key} // .defaults.env.${env_key} // \"\"" "$CONFIG_FILE" 2>/dev/null || echo "")"
+
+  if [[ "$value" =~ ^env:(.+)$ ]]; then
+    local env_var="${BASH_REMATCH[1]}"
     value="${!env_var:-}"
   fi
-  
+
+  [[ "$value" == "null" ]] && value=""
+
   echo "$value"
 }
+
 
 log_info "Loading configuration for agent: $AGENT_NAME"
 
@@ -168,7 +176,6 @@ TEST_DIR="${TEST_DIR:-$(parse_config "run.test_dir" "tests")}"
 MODE="${MODE:-$(parse_config "run.mode" "headless")}"
 OUTPUT_DIR="${OUTPUT_DIR:-$(parse_config "run.output_dir" "output")}"
 DELAY="${DELAY:-$(parse_config "run.delay" "5")}"
-SHOW_OUTPUT="${SHOW_OUTPUT:-$(parse_config "run.show_output" "true")}"
 
 case "$MODE" in
   headless|interactive) ;;
@@ -240,13 +247,17 @@ run_headless() {
   log_debug "Test file: $test_file"
   
   cd "$AGENT_OUTPUT_DIR" || exit 1
-  
-  if [[ "$SHOW_OUTPUT" == "true" ]]; then
-    $COMMAND $ARGS "$prompt" 2>&1 | sed "s/^/[$AGENT_NAME] /"
-  else
-    $COMMAND $ARGS "$prompt" >/dev/null 2>&1
+
+  local effective_args="$ARGS"
+  if [[ "$COMMAND" == "codex" ]]; then
+    if [[ ! "$ARGS" =~ (^|[[:space:]])exec($|[[:space:]]) ]]; then
+      effective_args="exec $ARGS"
+      log_debug "Detected codex headless mode, using: $COMMAND $effective_args"
+    fi
   fi
-  
+ 
+  $COMMAND $effective_args "$prompt" 
+
   local exit_code=$?
   if [[ $exit_code -eq 0 ]]; then
     log_success "Test case $case_id completed successfully"
