@@ -1,29 +1,52 @@
-# Example agents.yaml
+# agents.yaml
 defaults:
   env:
     LOG_LEVEL: INFO
   run:
+    test_dir: tests-tmp
+    mode: headless
     output_dir: output
-    timeout: 0
-    glob: "*.txt"
-    recurse: 0
+    delay: 5
+    show_output: true
 
 agents:
   pywen:
-    init: 'pywen --create-config --api_key "${QWEN_API_KEY}"  --model "${QWEN_MODEL}" --base_url "${QWEN_BASE_URL}"'
-    command: "pywen"
-    args: ""
-    model: "gpt-5-thinking"
+    command: pywen
+    init: ""
+    description: >
+      Pywen CLI. In headless mode use `pywen [args] "PROMPT"`. In interactive
+      mode run `pywen [args]` and use its REPL for multi-turn chat.
+    args: "--permission-mode=yolo --agent=qwen"
+    model: ""
     env:
-      OPENAI_API_KEY: "env:OPENAI_API_KEY"
-      OPENAI_BASE_URL: "${OPENAI_BASE_URL:-https://api.openai.com/v1}"
-      PYWEN_EXTRA: "foo"
+      QWEN_API_KEY: ""
+      QWEN_BASE_URL: ""
+      PYWEN_TRAJECTORY_DIR: ""
+      PYWEN_EXTRA: ""
 
   claude:
-    init: 'claude config set api_key "${ANTHROPIC_API_KEY}" && claude config set model "${MODEL:-claude-3-5-sonnet-20241022}"'
-    command: "claude"
-    args: "-p"
-    model: "claude-3-5-sonnet-20241022"
+    command: claude
+    description: >
+      Anthropic's Claude Code CLI (you can rename or point CLAUDE_CMD env var
+      to your own wrapper). Headless: `claude-code "PROMPT"`. Interactive:
+      `claude-code` (REPL).
+    args: "--permission-mode bypassPermissions"
+    model: ""
     env:
-      ANTHROPIC_API_KEY: "env:ANTHROPIC_API_KEY"
-      ANTHROPIC_BASE_URL: "${ANTHROPIC_BASE_URL:-https://api.anthropic.com}"
+      ANTHROPIC_API_KEY: ""
+      ANTHROPIC_BASE_URL: ""
+      CLAUDE_TRAJECTORY_DIR: ""
+      ANTHROPIC_EXTRA: ""
+
+  codex:
+    command: codex
+    description: >
+      OpenAI Codex CLI (set CODEX_CMD env to your wrapper).
+      Headless: `codex "PROMPT"`. Interactive: `codex`.
+    args: ""
+    model: ""
+    env:
+      OPENAI_API_KEY: ""
+      OPENAI_BASE_URL: ""
+      OPENAI_TRAJECTORY_DIR: ""
+      CODEX_EXTRA: ""
