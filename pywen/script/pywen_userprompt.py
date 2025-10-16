@@ -53,7 +53,6 @@ def extract_session_id(data: dict) -> str:
             return v
     return f"pid_{os.getpid()}"
 
-
 def write_session_case(session_id: str, case_id: str) -> None:
     path = CASE_DIR / f"{session_id}.case"
     try:

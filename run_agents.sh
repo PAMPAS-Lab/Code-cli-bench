@@ -176,6 +176,7 @@ TEST_DIR="${TEST_DIR:-$(parse_config "run.test_dir" "tests")}"
 MODE="${MODE:-$(parse_config "run.mode" "headless")}"
 OUTPUT_DIR="${OUTPUT_DIR:-$(parse_config "run.output_dir" "output")}"
 DELAY="${DELAY:-$(parse_config "run.delay" "5")}"
+CURRENT_DIR="$(pwd)"
 
 case "$MODE" in
   headless|interactive) ;;
@@ -239,13 +240,11 @@ if [[ -n "$INIT_CMD" ]]; then
 fi
 
 run_headless() {
-  local test_file="$1"
-  local case_id="$2"
+  local case_id="$1"
+  local prompt="$2"
   
   log_info "Running test case: $case_id"
-  log_debug "Test file: $test_file"
-  
-  cd "$AGENT_OUTPUT_DIR" || exit 1
+  log_debug "Test prompt: $prompt"
 
   local effective_args="$ARGS"
   if [[ "$COMMAND" == "codex" ]]; then
@@ -255,9 +254,7 @@ run_headless() {
     fi
   fi
 
-  prompt="$(cat "$test_file")"
- 
-  $COMMAND $effective_args "$prompt" 
+  $COMMAND $effective_args $prompt
 
   local exit_code=$?
   if [[ $exit_code -eq 0 ]]; then
@@ -293,16 +290,11 @@ wait_for_fifo_content() {
 
 
 run_interactive() {
-  local test_file="$1"
-  local case_id="$2"
-
-  if [[ ! -f "$test_file" ]]; then
-    log_warn "Test file not found: $test_file"
-    return 2
-  fi
+  local case_id="$1"
+  local prompt="$2"
 
   log_info  "Running test case (interactive via tmux): $case_id"
-  log_debug "Test file: $test_file"
+  log_debug "Test prompt: $prompt"
 
   local fifo_dir="/tmp/agent-done"
   local fifo_path="$fifo_dir/${AGENT_NAME}.fifo"
@@ -319,7 +311,7 @@ run_interactive() {
   tmux send-keys -t "$pane_id" -l "CASE_ID=${case_id}"
   tmux send-keys -t "$pane_id" Enter C-m
   sleep 1
-  { cat "$test_file"; printf '\n'; } | tmux load-buffer -b tmpbuf -
+  printf "$prompt" | tmux load-buffer -b tmpbuf -
   tmux paste-buffer -t "$pane_id" -b tmpbuf
   tmux delete-buffer -b tmpbuf 2>/dev/null || true
   tmux send-keys -t "$pane_id" C-m
@@ -339,11 +331,11 @@ run_interactive() {
   fi
 }
 
-
 log_info "Starting test execution in $MODE mode"
 
 for test_file in "${tests[@]}"; do
   case_id="$(basename "$test_file" | sed 's/\.[^.]*$//')"
+  prompt=`cat "$test_file"`
   
   printf "\n${CYAN}────────────────────────────────────────────────────────${NC}\n"
   printf "${YELLOW}[CASE] %s - %s${NC}\n" "$case_id" "$(date -Iseconds)"
@@ -352,17 +344,20 @@ for test_file in "${tests[@]}"; do
   if [[ "$STEP_MODE" == "1" && "$MODE" != "interactive" ]]; then
     read -rp "Press Enter to continue with test case $case_id..."
   fi
-  
+  cd "$AGENT_OUTPUT_DIR" || exit 1
+
   case "$MODE" in
     headless)
-      run_headless "$test_file" "$case_id" 
+      run_headless "$case_id" "$prompt" 
       ;;
     interactive)
       set +e
-      run_interactive "$test_file" "$case_id"
+      run_interactive "$case_id" "$prompt" 
       set -e
       ;;
   esac
+
+  cd "$CURRENT_DIR" || exit 1
   
   if [[ "$STEP_MODE" != "1" && "$DELAY" != "0" ]]; then
     log_debug "Waiting ${DELAY}s before next test"

@@ -48,9 +48,9 @@ COPY --chown=node:node claude/claude.json /home/node/.claude.json
 COPY --chown=node:node claude/setting/settings.json /home/node/.claude/settings.json
 RUN chmod 755 -R /workspace/Code-cli-bench/claude/script/
 
-RUN git clone https://github.com/leeyeel/Pywen.git \
+RUN https://github.com/PAMPAS-Lab/Pywen.git \
  && cd Pywen \
- && git checkout feat/config \
+ && git checkout dev \
  && uv venv \
  && uv sync --all-extras \
  && uv pip install -e .
