@@ -3,3 +3,4 @@ test-demo/
 output/*
 *.env
 !.gitkeep
+agents.yaml

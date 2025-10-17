@@ -1,0 +1,51 @@
+# agents.yaml
+defaults:
+  env:
+    LOG_LEVEL: INFO
+  run:
+    test_dir: tests
+    mode: headless
+    output_dir: output
+    delay: 1
+
+agents:
+  pywen:
+    command: pywen
+    init: ""
+    description: >
+      Pywen CLI. In headless mode use `pywen [args] "PROMPT"`. In interactive
+      mode run `pywen [args]` and use its REPL for multi-turn chat.
+    args: "--permission-mode=yolo --agent=qwen"
+    model: "env:QWEN_MODEL"
+    env:
+      QWEN_API_KEY: "env:QWEN_API_KEY"
+      QWEN_BASE_URL: "env:QWEN_BASE_URL"
+      PYWEN_TRAJECTORY_DIR: ""
+      PYWEN_EXTRA: ""
+
+  claude:
+    command: claude
+    description: >
+      Anthropic's Claude Code CLI (you can rename or point CLAUDE_CMD env var
+      to your own wrapper). Headless: `claude-code "PROMPT"`. Interactive:
+      `claude-code` (REPL).
+    args: "--permission-mode bypassPermissions"
+    model: "env:QWEN_MODEL"
+    env:
+      ANTHROPIC_API_KEY: "env:ANTHROPIC_AUTH_TOKEN"
+      ANTHROPIC_BASE_URL: "env:ANTHROPIC_BASE_URL"
+      CLAUDE_TRAJECTORY_DIR: ""
+      ANTHROPIC_EXTRA: ""
+
+  codex:
+    command: codex 
+    description: >
+      OpenAI Codex CLI (set CODEX_CMD env to your wrapper).
+      Headless: `codex "PROMPT"`. Interactive: `codex`.
+    args: "--dangerously-bypass-approvals-and-sandbox"
+    model: "gpt-5-codex"
+    env:
+      OPENAI_API_KEY: ""
+      OPENAI_BASE_URL: ""
+      CODEX_TRAJECTORY_DIR: ""
+      CODEX_EXTRA: ""

@@ -2,13 +2,13 @@
 # -*- coding: utf-8 -*-
 """
 Claude Code Stop/SubagentStop hook:
-- 将 "<id> DONE\n" 写入 FIFO: /tmp/agent-done/claude.done
+- 将 "<id> DONE\n" 写入 FIFO: /tmp/agent-done/claude.fifo
 """
 
 import sys, os, json, re
 
 FIFO_DIR = os.environ.get("FIFO_DIR", "/tmp/agent-done")
-FIFO_PATH = os.path.join(FIFO_DIR, "claude.done")
+FIFO_PATH = os.path.join(FIFO_DIR, "claude.fifo")
 CASE_RE = re.compile(r"CASE_ID=([^\s\"']+)")
 
 def ensure_fifo():
